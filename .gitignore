@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+## .DS_Store files
+.DS_Store
+
 # Distribution / packaging
 .Python
 build/
@@ -109,6 +112,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+## Custom Environments
+firebase-keys.env
+urls.env
 
 # Spyder project settings
 .spyderproject
