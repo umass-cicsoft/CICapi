@@ -3,8 +3,8 @@ from dotenv import dotenv_values
 from flask import Flask, request
 from flask_cors import CORS
 
-from app.user_registration import UserRegistration
-from app.user_attendance import UserAttendance
+from api.user_registration import UserRegistration
+from api.user_attendance import UserAttendance
 
 cred_object = firebase_admin.credentials.Certificate(dict(dotenv_values("firebase-keys.env")))
 default_app = firebase_admin.initialize_app(cred_object, dict(dotenv_values("urls.env")))
@@ -17,6 +17,8 @@ CORS(app)
 Returns:
     response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
 """
+
+
 @app.route("/", methods=["GET"])
 def main():
     response = {
@@ -26,11 +28,14 @@ def main():
     }
     return {"message": response["message"]}, response["code"]
 
+
 """Register a new user in the database at endpoint: "https://domain.ext/user-registration"
 
 Returns:
     response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
 """
+
+
 @app.route("/user-registration", methods=["POST"])
 def registerUser():
     userRegistration = UserRegistration(request.get_json())
