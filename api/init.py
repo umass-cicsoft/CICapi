@@ -39,6 +39,7 @@ app.config.update(
         "MAIL_PORT": os.environ.get("MAIL_SERVER"),
         "MAIL_USERNAME": os.environ.get("MAIL_USERNAME"),
         "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD"),
+        "MAIL_DEFAULT_SENDER": os.environ.get("MAIL_USERNAME"),
         "MAIL_USE_TLS": True,
         "MAIL_USE_SSL": False,
     }
@@ -78,7 +79,6 @@ def registerUser():
         if registration["code"] == 200:
             msg = Message(
                 subject="We have received your application for CICSoft!",
-                sender=("CICSoft", "cicsoftumass@gmail.com"),
                 recipients=[registration["data"]["umass_email"]],
             )
             msg.html = render_template(
