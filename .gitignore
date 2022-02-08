@@ -113,10 +113,6 @@ ENV/
 env.bak/
 venv.bak/
 
-## Custom Environments
-firebase-keys.env
-urls.env
-
 # Spyder project settings
 .spyderproject
 .spyproject
