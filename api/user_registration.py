@@ -5,7 +5,19 @@ import pytz
 
 class UserRegistration:
     def __init__(self, requestJSON):
-        self.expectedFields = ["first_name", "last_name", "umass_email", "github_link", "linked_link", "major", "grad_year", "ans", "ans2", "extra_field1", "extra_field2"]
+        self.expectedFields = [
+            "first_name",
+            "last_name",
+            "umass_email",
+            "github_link",
+            "linked_link",
+            "major",
+            "grad_year",
+            "ans",
+            "ans2",
+            "extra_field1",
+            "extra_field2",
+        ]
         self.requestJSON = requestJSON
 
     def register(self):
@@ -13,12 +25,18 @@ class UserRegistration:
             ref = db.reference("/")
             email = self.requestJSON["umass_email"].replace("@umass.edu", "")
             for field in self.expectedFields:
-                ref.child("Members").child(email).child(field).set(self.requestJSON[field])
+                ref.child("Members").child(email).child(field).set(
+                    self.requestJSON[field]
+                )
             ref.child("Members").child(email).child("joined_on").set(self.getTime())
             return {
                 "status": "success",
                 "code": 200,
                 "message": "Member registered successfully",
+                "data": {
+                    "first_name": self.requestJSON["first_name"],
+                    "umass_email": self.requestJSON["umass_email"],
+                },
             }
         except:
             return {
@@ -73,7 +91,7 @@ class UserRegistration:
             "message": "Validated details successfully",
         }
 
-    def getTime():
+    def getTime(self):
         now = datetime.now(pytz.timezone("US/Eastern"))
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
         return str(dt_string)
