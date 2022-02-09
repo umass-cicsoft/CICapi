@@ -36,12 +36,11 @@ CORS(app)
 app.config.update(
     {
         "MAIL_SERVER": os.environ.get("MAIL_SERVER"),
-        "MAIL_PORT": os.environ.get("MAIL_SERVER"),
+        "MAIL_PORT": os.environ.get("MAIL_PORT"),
         "MAIL_USERNAME": os.environ.get("MAIL_USERNAME"),
         "MAIL_PASSWORD": os.environ.get("MAIL_PASSWORD"),
-        "MAIL_DEFAULT_SENDER": os.environ.get("MAIL_USERNAME"),
-        "MAIL_USE_TLS": True,
-        "MAIL_USE_SSL": False,
+        "MAIL_USE_TLS": False,
+        "MAIL_USE_SSL": True,
     }
 )
 mail = Mail(app)
@@ -79,6 +78,7 @@ def registerUser():
         if registration["code"] == 200:
             msg = Message(
                 subject="We have received your application for CICSoft!",
+                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
                 recipients=[registration["data"]["umass_email"]],
             )
             msg.html = render_template(
