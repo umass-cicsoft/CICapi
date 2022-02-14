@@ -77,6 +77,7 @@ def registerUser():
         registration = userRegistration.register()
         if registration["code"] == 200:
             firstName = registration["data"]["first_name"]
+            lastName = registration["data"]["last_name"]
             umassEmail = registration["data"]["umass_email"]
             msg = Message(
                 subject="We have received your application for CICSoft!",
@@ -88,12 +89,21 @@ def registerUser():
             )
             mail.send(msg)
             msg_self = Message(
-                subject=f"{firstName} has applied to be a member!",
+                subject=f"{firstName} {lastName} has applied to be a member!",
                 sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-                recipients=[os.environ.get("MAIL_USERNAME")],
+                recipients=['cicsoftumass@gmail.com'],
             )
-            msg_self.body = f"{firstName} has applied to be a member at CICSoft. You can reach out to them at {umassEmail}, where they have already received an email from us.",
+            msg_self.html = render_template(
+                "registration_notification.html", firstName=firstName, lastName=lastName, umassEmail=umassEmail
+            )
             mail.send(msg_self)
+            # msg_self = Message(
+            #     subject= "Test has applied to be a member!",
+            #     sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
+            #     recipients=["cicsoftumass@gmail.com"],
+            # )
+            # msg_self.body = "Test has applied to be a member at CICSoft. You can reach out to them at test@test.tes, where they have already received an email from us.",
+            # mail.send(msg_self)
         return {"message": registration["message"]}, registration["code"]
     else:
         return {"message": validation["message"]}, validation["code"]

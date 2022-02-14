@@ -35,6 +35,7 @@ class UserRegistration:
                 "message": "Member registered successfully",
                 "data": {
                     "first_name": self.requestJSON["first_name"],
+                    "last_name": self.requestJSON["last_name"],
                     "umass_email": self.requestJSON["umass_email"],
                 },
             }
