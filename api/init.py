@@ -76,15 +76,24 @@ def registerUser():
     if validation["status"] == "success":
         registration = userRegistration.register()
         if registration["code"] == 200:
+            firstName = registration["data"]["first_name"]
+            umassEmail = registration["data"]["umass_email"]
             msg = Message(
                 subject="We have received your application for CICSoft!",
                 sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-                recipients=[registration["data"]["umass_email"]],
+                recipients=[umassEmail],
             )
             msg.html = render_template(
-                "welcome.html", firstName=registration["data"]["first_name"]
+                "welcome.html", firstName=firstName
             )
             mail.send(msg)
+            msg_self = Message(
+                subject=f"{firstName} has applied to be a member!",
+                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
+                recipients=[os.environ.get("MAIL_USERNAME")],
+            )
+            msg_self.body = f"{firstName} has applied to be a member at CICSoft. You can reach out to them at {umassEmail}, where they have already received an email from us.",
+            mail.send(msg_self)
         return {"message": registration["message"]}, registration["code"]
     else:
         return {"message": validation["message"]}, validation["code"]
