@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 
 from api.user_registration import UserRegistration
+from api.user_decision import UserDecision
 from api.user_attendance import UserAttendance
 
 load_dotenv()
@@ -68,6 +69,26 @@ Returns:
     response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
 """
 
+@app.route("/user-decision", methods=["POST"])
+def decideUser():
+    userDecision = UserDecision(request.get_json())
+    decision = userDecision.decide()
+    if decision["status"] == "success":
+        for accepted in decision["data"]["accepted"]:
+            msg = Message(
+                subject="Congratulations! Welcome to CICSoft!",
+                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
+                recipients=[accepted["umassEmail"]],
+            )
+            msg.html = render_template(
+                "acceptance.html", firstName=accepted["firstName"], lastName=accepted["lastName"]
+            )
+            mail.send(msg)
+        # for rejected in decision["data"]["rejected"]:
+        # ! TO BE DONE SOON
+        return {"message": decision["message"]}, decision["code"]
+    else:
+        return {"message": decision["message"]}, decision["code"]
 
 @app.route("/user-registration", methods=["POST"])
 def registerUser():
@@ -97,13 +118,6 @@ def registerUser():
                 "registration_notification.html", firstName=firstName, lastName=lastName, umassEmail=umassEmail
             )
             mail.send(msg_self)
-            # msg_self = Message(
-            #     subject= "Test has applied to be a member!",
-            #     sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-            #     recipients=["cicsoftumass@gmail.com"],
-            # )
-            # msg_self.body = "Test has applied to be a member at CICSoft. You can reach out to them at test@test.tes, where they have already received an email from us.",
-            # mail.send(msg_self)
         return {"message": registration["message"]}, registration["code"]
     else:
         return {"message": validation["message"]}, validation["code"]
