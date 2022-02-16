@@ -7,7 +7,7 @@ class UserDecision:
     def iterateDecisions(self, emailList, dbRef):
         detailList = list()
         for _id in emailList:
-            candidate = dbRef.child("Members").child(_id.replace("@umass.edu", ""))
+            candidate = dbRef.child("members").child(_id.replace("@umass.edu", ""))
             candidate.child("application_status").set("accepted")
             firstName = str(candidate.child("first_name").get())
             lastName = str(candidate.child("last_name").get())

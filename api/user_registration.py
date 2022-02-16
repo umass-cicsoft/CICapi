@@ -25,10 +25,10 @@ class UserRegistration:
             ref = db.reference("/")
             email = self.requestJSON["umass_email"].replace("@umass.edu", "")
             for field in self.expectedFields:
-                ref.child("Members").child(email).child(field).set(
+                ref.child("members").child(email).child(field).set(
                     self.requestJSON[field]
                 )
-            ref.child("Members").child(email).child("joined_on").set(self.getTime())
+            ref.child("members").child(email).child("joined_on").set(self.getTime())
             return {
                 "status": "success",
                 "code": 200,
@@ -73,7 +73,7 @@ class UserRegistration:
                     "message": "Email is invalid",
                 }
             email = self.requestJSON["umass_email"].replace("@umass.edu", "")
-            if ref.child("Members").child(email).get() != None:
+            if ref.child("members").child(email).get() != None:
                 return {
                     "status": "error",
                     "code": 409,
