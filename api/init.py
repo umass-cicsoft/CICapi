@@ -84,8 +84,16 @@ def decideUser():
                 "acceptance.html", firstName=accepted["firstName"], lastName=accepted["lastName"]
             )
             mail.send(msg)
-        # for rejected in decision["data"]["rejected"]:
-        # ! TO BE DONE SOON
+        for waitlisted in decision["data"]["waitlisted"]:
+            msg = Message(
+                subject="Thank you for applying to CICSoft!",
+                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
+                recipients=[waitlisted["umassEmail"]],
+            )
+            msg.html = render_template(
+                "waitlist.html", firstName=waitlisted["firstName"], lastName=waitlisted["lastName"]
+            )
+            mail.send(msg)
         return {"message": decision["message"]}, decision["code"]
     else:
         return {"message": decision["message"]}, decision["code"]

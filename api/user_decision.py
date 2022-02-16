@@ -4,11 +4,11 @@ class UserDecision:
     def __init__(self, requestJSON):
         self.requestJSON = requestJSON
         
-    def iterateDecisions(self, emailList, dbRef):
+    def iterateDecisions(self, emailList, applicationStatus, dbRef):
         detailList = list()
         for _id in emailList:
             candidate = dbRef.child("members").child(_id.replace("@umass.edu", ""))
-            candidate.child("application_status").set("accepted")
+            candidate.child("application_status").set(applicationStatus)
             firstName = str(candidate.child("first_name").get())
             lastName = str(candidate.child("last_name").get())
             umassEmail = str(candidate.child("umass_email").get())
@@ -18,15 +18,15 @@ class UserDecision:
     def decide(self):
         try:
             ref = db.reference("/")
-            accepted = self.iterateDecisions(self.requestJSON["accepted"], ref)
-            rejected = self.iterateDecisions(self.requestJSON["rejected"], ref)
+            accepted = self.iterateDecisions(self.requestJSON["accepted"], "accepted", ref)
+            waitlisted = self.iterateDecisions(self.requestJSON["waitlisted"], "waitlisted", ref)
             return {
                 "status": "success",
                 "code": 200,
                 "message": "Members successfully decided!",
                 "data": {
                     "accepted": accepted,
-                    "rejected": rejected,
+                    "waitlisted": waitlisted,
                 },
             }
         except:
