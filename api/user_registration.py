@@ -23,7 +23,7 @@ class UserRegistration:
     def register(self):
         try:
             ref = db.reference("/")
-            email = self.requestJSON["umass_email"].replace("@umass.edu", "")
+            email = (self.requestJSON["umass_email"].replace("@umass.edu", "")).lower()
             for field in self.expectedFields:
                 ref.child("members").child(email).child(field).set(
                     self.requestJSON[field]
