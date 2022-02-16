@@ -9,14 +9,12 @@ class UserRegistration:
             "first_name",
             "last_name",
             "umass_email",
-            "github_link",
-            "linked_link",
+            "graduation_year",
             "major",
-            "grad_year",
-            "ans",
-            "ans2",
-            "extra_field1",
-            "extra_field2",
+            "github_link",
+            "linkedin_link",
+            "interest_response",
+            "referral_response",
         ]
         self.requestJSON = requestJSON
 
@@ -60,7 +58,7 @@ class UserRegistration:
                     "code": 406,
                     "message": "Required fields are missing: " + str(missingFields),
                 }
-            if int(self.requestJSON["grad_year"]) < date.today().year:
+            if int(self.requestJSON["graduation_year"]) < date.today().year:
                 return {
                     "status": "error",
                     "code": 406,

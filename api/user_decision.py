@@ -8,7 +8,7 @@ class UserDecision:
         detailList = list()
         for _id in emailList:
             candidate = dbRef.child("members").child(_id.replace("@umass.edu", ""))
-            candidate.child("application_status").set(applicationStatus)
+            candidate.child("status").set(applicationStatus)
             firstName = str(candidate.child("first_name").get())
             lastName = str(candidate.child("last_name").get())
             umassEmail = str(candidate.child("umass_email").get())
@@ -18,7 +18,7 @@ class UserDecision:
     def decide(self):
         try:
             ref = db.reference("/")
-            accepted = self.iterateDecisions(self.requestJSON["accepted"], "accepted", ref)
+            accepted = self.iterateDecisions(self.requestJSON["accepted"], "member", ref)
             waitlisted = self.iterateDecisions(self.requestJSON["waitlisted"], "waitlisted", ref)
             return {
                 "status": "success",
