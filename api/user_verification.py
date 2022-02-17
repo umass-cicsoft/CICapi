@@ -34,12 +34,14 @@ class UserVerification:
                 return {
                     "status": "error",
                     "code": 404,
+                    "discord_id":"",
                     "message": "No member with given email address",
                 }
         except:
             return {
                 "status": "error",
                 "code": 500,
+                "discord_id":"",
                 "message": "Server failed to process user verification",
             }
 
