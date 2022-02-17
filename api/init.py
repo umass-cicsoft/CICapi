@@ -134,7 +134,7 @@ def verifyUser():
         sendEmail(
             f"CICSoft Verification Code: {otp}", "verification.html", verification["data"],
         )
-    return {"message": verification["message"]}, verification["code"]
+    return {"message": verification["message"],"discord_id":verification["discord_id"]}, verification["code"]
 
 
 @app.route("/user/verified", methods=["POST"])
