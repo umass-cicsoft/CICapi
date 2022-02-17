@@ -20,13 +20,11 @@ class UserRegistration:
 
     def register(self):
         try:
-            ref = db.reference("/")
-            email = (self.requestJSON["umass_email"].replace("@umass.edu", "")).lower()
+            ref = db.reference("/members/")
+            _id = self.requestJSON["umass_email"].replace("@umass.edu", "").lower()
             for field in self.expectedFields:
-                ref.child("members").child(email).child(field).set(
-                    self.requestJSON[field]
-                )
-            ref.child("members").child(email).child("joined_on").set(self.getTime())
+                ref.child(_id).child(field).set(self.requestJSON[field])
+            ref.child(_id).child("joined_on").set(self.getTime())
             return {
                 "status": "success",
                 "code": 200,
@@ -45,13 +43,14 @@ class UserRegistration:
             }
 
     def validate(self):
-        ref = db.reference("/")
+        ref = db.reference("/members/")
         try:
             passedFields = dict(self.requestJSON).keys()
             missingFields = []
             for field in self.expectedFields:
                 if field not in passedFields:
                     missingFields.append(field)
+            self.requestJSON["umass_email"] = self.requestJSON["umass_email"].lower()
             if len(missingFields) > 0:
                 return {
                     "status": "error",
@@ -70,8 +69,8 @@ class UserRegistration:
                     "code": 406,
                     "message": "Email is invalid",
                 }
-            email = self.requestJSON["umass_email"].replace("@umass.edu", "")
-            if ref.child("members").child(email).get() != None:
+            _id = self.requestJSON["umass_email"].replace("@umass.edu", "").lower()
+            if ref.child(_id).get() != None:
                 return {
                     "status": "error",
                     "code": 409,

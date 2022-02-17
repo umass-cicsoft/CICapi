@@ -7,6 +7,7 @@ from flask_mail import Mail, Message
 
 from api.user_registration import UserRegistration
 from api.user_decision import UserDecision
+from api.user_verification import UserVerification
 from api.user_attendance import UserAttendance
 
 load_dotenv()
@@ -21,16 +22,12 @@ cred_object = firebase_admin.credentials.Certificate(
         "client_id": os.environ.get("FIREBASE_CLIENT_ID"),
         "auth_uri": os.environ.get("FIREBASE_AUTH_URI"),
         "token_uri": os.environ.get("FIREBASE_TOKEN_URI"),
-        "auth_provider_x509_cert_url": os.environ.get(
-            "FIREBASE_AUTH_PROVIDER_X509_CERT_URL"
-        ),
+        "auth_provider_x509_cert_url": os.environ.get("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
         "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL"),
     }
 )
 
-default_app = firebase_admin.initialize_app(
-    cred_object, {"databaseURL": os.environ.get("DATABASE_URL"),}
-)
+default_app = firebase_admin.initialize_app(cred_object, {"databaseURL": os.environ.get("DATABASE_URL"),})
 
 app = Flask(__name__)
 CORS(app)
@@ -46,15 +43,13 @@ app.config.update(
 )
 mail = Mail(app)
 
-"""Display a message welcoming the user/tester at endpoint: "https://cicsoft-web-api.herokuapp.com/"
-
-Returns:
-    response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
-"""
-
 
 @app.route("/", methods=["GET"])
 def main():
+    """Display a message welcoming the user/tester at endpoint: "https://cicsoft-web-api.herokuapp.com/"
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
     response = {
         "status": "success",
         "code": 200,
@@ -63,43 +58,24 @@ def main():
     return {"message": response["message"]}, response["code"]
 
 
-"""Register a new user in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/user-registration"
-
-Returns:
-    response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
-"""
-
-@app.route("/user-decision", methods=["POST"])
-def decideUser():
-    userDecision = UserDecision(request.get_json())
-    decision = userDecision.decide()
-    if decision["status"] == "success":
-        for accepted in decision["data"]["accepted"]:
-            msg = Message(
-                subject="Congratulations! Welcome to CICSoft!",
-                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-                recipients=[accepted["umassEmail"]],
-            )
-            msg.html = render_template(
-                "acceptance.html", firstName=accepted["firstName"], lastName=accepted["lastName"]
-            )
-            mail.send(msg)
-        for waitlisted in decision["data"]["waitlisted"]:
-            msg = Message(
-                subject="Thank you for applying to CICSoft!",
-                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-                recipients=[waitlisted["umassEmail"]],
-            )
-            msg.html = render_template(
-                "waitlist.html", firstName=waitlisted["firstName"], lastName=waitlisted["lastName"]
-            )
-            mail.send(msg)
-        return {"message": decision["message"]}, decision["code"]
-    else:
-        return {"message": decision["message"]}, decision["code"]
-
-@app.route("/user-registration", methods=["POST"])
+@app.route("/user/register", methods=["POST"])
 def registerUser():
+    """Register a new user in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/user/register"
+    Request Payload: 
+        {
+            "first_name": <User's first name>,
+            "last_name": <User's last name>,
+            "umass_email": <User's official @umass.edu email address>,
+            "graduation_year": <User's graduation year>,
+            "major": <User's major(s)>,
+            "github_link": <Link to user's GitHub profile>,
+            "linkedin_link": <Link to user's LinkedIn profile>,
+            "interest_response": <User's response to why they are interested in us>,
+            "referral_response": <User's response to how they got to referred to us>
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
     userRegistration = UserRegistration(request.get_json())
     validation = userRegistration.validate()
     if validation["status"] == "success":
@@ -107,25 +83,86 @@ def registerUser():
         if registration["code"] == 200:
             firstName = registration["data"]["first_name"]
             lastName = registration["data"]["last_name"]
-            umassEmail = registration["data"]["umass_email"]
-            msg = Message(
-                subject="We have received your application for CICSoft!",
-                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-                recipients=[umassEmail],
+            sendEmail(
+                "We have received your application for CICSoft!", "welcome.html", registration["data"],
             )
-            msg.html = render_template(
-                "welcome.html", firstName=firstName
+            sendEmail(
+                f"{firstName} {lastName} has applied to be a member!",
+                "registration_notification.html",
+                registration["data"],
+                "cicsoftumass@gmail.com",
             )
-            mail.send(msg)
-            msg_self = Message(
-                subject=f"{firstName} {lastName} has applied to be a member!",
-                sender=("CICSoft", os.environ.get("MAIL_USERNAME")),
-                recipients=['cicsoftumass@gmail.com'],
-            )
-            msg_self.html = render_template(
-                "registration_notification.html", firstName=firstName, lastName=lastName, umassEmail=umassEmail
-            )
-            mail.send(msg_self)
         return {"message": registration["message"]}, registration["code"]
     else:
         return {"message": validation["message"]}, validation["code"]
+
+
+@app.route("/user/decide", methods=["POST"])
+def decideUser():
+    """Decide on user applications at endpoint: "https://cicsoft-web-api.herokuapp.com/user/decide"
+    Request Payload: 
+        {
+            "accepted": [<Accepted user's official @umass.edu email address>, ...],
+            "waitlisted": [<Waitlisted user's official @umass.edu email address>, ...]
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
+    decision = UserDecision(request.get_json()).decide()
+    if decision["status"] == "success":
+        for accepted in decision["data"]["accepted"]:
+            sendEmail("Congratulations! Welcome to CICSoft!", "acceptance.html", accepted)
+        for waitlisted in decision["data"]["waitlisted"]:
+            sendEmail("Thank you for applying to CICSoft!", "waitlist.html", waitlisted)
+    return {"message": decision["message"]}, decision["code"]
+
+
+@app.route("/user/verify", methods=["POST"])
+def verifyUser():
+    """Verify a user's request to become a Discord "Member" at endpoint: "https://cicsoft-web-api.herokuapp.com/user/verify"
+    Request Payload: 
+        {
+            "umass_email": <User's official @umass.edu email address>,
+            "otp": <OTP to be used for verification purposes>
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
+    verification = UserVerification(request.get_json()).verify()
+    if verification["status"] == "success":
+        otp = verification["data"]["otp"]
+        sendEmail(
+            f"CICSoft Verification Code: {otp}", "verification.html", verification["data"],
+        )
+    return {"message": verification["message"]}, verification["code"]
+
+
+@app.route("/user/verified", methods=["POST"])
+def updateVerifiedUser():
+    """Update a user's discord_id if verified at endpoint: "https://cicsoft-web-api.herokuapp.com/user/verified"
+    Request Payload: 
+        {
+            "umass_email": <User's official @umass.edu email address>,
+            "discord_id": <User's Discord identifier>
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
+    verified = UserVerification(request.get_json()).updateVerified()
+    return {"message": verified["message"]}, verified["code"]
+
+
+def sendEmail(subject, htmlTemplate, params, recipient=None):
+    """Send an email to appropriate recipient with given template and parameters
+    """
+    if recipient is None:
+        recipient = params.get("umass_email")
+    msg = Message(subject=subject, sender=("CICSoft", os.environ.get("MAIL_USERNAME")), recipients=[recipient],)
+    msg.html = render_template(
+        htmlTemplate,
+        firstName=params.get("first_name"),
+        lastName=params.get("last_name"),
+        umassEmail=params.get("umass_email"),
+        otp=params.get("otp"),
+    )
+    mail.send(msg)
