@@ -18,7 +18,7 @@ class UserVerification:
                         "data": {
                             "first_name": members.get(_id).get("first_name"),
                             "last_name": members.get(_id).get("last_name"),
-                            "umass_email": self.requestJSON["umass_email"],
+                            "umass_email": self.requestJSON["umass_email"],                            
                             "otp": self.requestJSON["otp"],
                         },
                     }
@@ -26,6 +26,7 @@ class UserVerification:
                     return {
                         "status": "error",
                         "code": 409,
+                        "discord_id": members.get(_id).get("discord_id"),
                         "message": "Member is already verified",
                     }
             else:
