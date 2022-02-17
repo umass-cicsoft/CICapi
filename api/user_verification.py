@@ -15,6 +15,7 @@ class UserVerification:
                         "status": "success",
                         "code": 200,
                         "message": "Successfully sent verification code to member!",
+                        "discord_id":"",
                         "data": {
                             "first_name": members.get(_id).get("first_name"),
                             "last_name": members.get(_id).get("last_name"),
