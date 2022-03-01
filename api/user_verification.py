@@ -20,7 +20,7 @@ class UserVerification:
                             "first_name": members.get(_id).get("first_name"),
                             "last_name": members.get(_id).get("last_name"),
                             "umass_email": self.requestJSON["umass_email"],                            
-                            "otp": self.requestJSON["otp"],
+                            "otp": str(self.requestJSON["otp"]).zfill(4),
                         },
                     }
                 else:
