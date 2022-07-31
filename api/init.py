@@ -9,6 +9,7 @@ from api.user_registration import UserRegistration
 from api.user_decision import UserDecision
 from api.user_verification import UserVerification
 from api.user_attendance import UserAttendance
+from api.user_tech_poll import UserTechPoll
 
 load_dotenv()
 
@@ -151,6 +152,18 @@ def updateVerifiedUser():
     verified = UserVerification(request.get_json()).updateVerified()
     return {"message": verified["message"]}, verified["code"]
 
+@app.route("/technology_poll", methods=["POST"])
+def pollTechnologySubmission():
+    """Add technology poll submission in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/technology_poll"
+    Request Payload: 
+        {
+            "poll_value": <User's poll choice>
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
+    techPoll = UserTechPoll(request.get_json()).poll()
+    return {"message": techPoll["message"]}, techPoll["code"]
 
 def sendEmail(subject, htmlTemplate, params, recipient=None):
     """Send an email to appropriate recipient with given template and parameters
