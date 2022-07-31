@@ -162,7 +162,7 @@ def pollTechnologySubmission():
     Returns:
         response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
     """
-    techPoll = UserTechPoll(request.get_json()).poll()
+    techPoll = UserTechPoll(request.get_json(), request).poll()
     return {"message": techPoll["message"]}, techPoll["code"]
 
 def sendEmail(subject, htmlTemplate, params, recipient=None):

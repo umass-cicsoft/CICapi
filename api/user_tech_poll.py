@@ -5,11 +5,14 @@ import uuid
 
 
 class UserTechPoll:
-    def __init__(self, requestJSON):
+    def __init__(self, requestJSON, request):
         self.expectedFields = [
-            "poll_value"
+            "poll_value",
+            "ip_address"
         ]
+        self.ipAddress = request.access_route if len(request.headers.getlist("X-Forwarded-For")) == 0 else request.headers.getlist("X-Forwarded-For")[0]
         self.requestJSON = requestJSON
+        self.requestJSON["ip_address"] = self.ipAddress
 
     def poll(self):
         try:
