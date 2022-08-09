@@ -173,7 +173,7 @@ def pollTechnologySubmission():
     return {"message": techPoll["message"]}, techPoll["code"]
 
 
-@app.route("/lab_Ideas", methods=["POST"])
+@app.route("/lab_ideas", methods=["POST"])
 def labIdeaSubmission():
     """Add idea for the lab in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/lab_ideas"
     Request Payload: 
