@@ -10,6 +10,8 @@ from api.user_decision import UserDecision
 from api.user_verification import UserVerification
 from api.user_attendance import UserAttendance
 from api.user_tech_poll import UserTechPoll
+from api.lab_ideas import LabIdeas
+
 
 load_dotenv()
 
@@ -28,7 +30,8 @@ cred_object = firebase_admin.credentials.Certificate(
     }
 )
 
-default_app = firebase_admin.initialize_app(cred_object, {"databaseURL": os.environ.get("DATABASE_URL"),})
+default_app = firebase_admin.initialize_app(
+    cred_object, {"databaseURL": os.environ.get("DATABASE_URL"), })
 
 app = Flask(__name__)
 CORS(app)
@@ -85,7 +88,8 @@ def registerUser():
             firstName = registration["data"]["first_name"]
             lastName = registration["data"]["last_name"]
             sendEmail(
-                "We have received your application for CICSoft!", "welcome.html", registration["data"],
+                "We have received your application for CICSoft!", "welcome.html", registration[
+                    "data"],
             )
             sendEmail(
                 f"{firstName} {lastName} has applied to be a member!",
@@ -112,9 +116,11 @@ def decideUser():
     decision = UserDecision(request.get_json()).decide()
     if decision["status"] == "success":
         for accepted in decision["data"]["accepted"]:
-            sendEmail("Congratulations! Welcome to CICSoft!", "acceptance.html", accepted)
+            sendEmail("Congratulations! Welcome to CICSoft!",
+                      "acceptance.html", accepted)
         for waitlisted in decision["data"]["waitlisted"]:
-            sendEmail("Thank you for applying to CICSoft!", "waitlist.html", waitlisted)
+            sendEmail("Thank you for applying to CICSoft!",
+                      "waitlist.html", waitlisted)
     return {"message": decision["message"]}, decision["code"]
 
 
@@ -135,7 +141,7 @@ def verifyUser():
         sendEmail(
             f"CICSoft Verification Code: {otp}", "verification.html", verification["data"],
         )
-    return {"message": verification["message"],"discord_id":verification["discord_id"]}, verification["code"]
+    return {"message": verification["message"], "discord_id": verification["discord_id"]}, verification["code"]
 
 
 @app.route("/user/verified", methods=["POST"])
@@ -152,6 +158,7 @@ def updateVerifiedUser():
     verified = UserVerification(request.get_json()).updateVerified()
     return {"message": verified["message"]}, verified["code"]
 
+
 @app.route("/technology_poll", methods=["POST"])
 def pollTechnologySubmission():
     """Add technology poll submission in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/technology_poll"
@@ -165,12 +172,30 @@ def pollTechnologySubmission():
     techPoll = UserTechPoll(request.get_json(), request).poll()
     return {"message": techPoll["message"]}, techPoll["code"]
 
+
+@app.route("/lab_Ideas", methods=["POST"])
+def labIdeaSubmission():
+    """Add idea for the lab in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/lab_ideas"
+    Request Payload: 
+        {
+            "first_name": <User's first name>,
+            "last_name": <User's last name>,
+            "idea_text": <User's lab idea>
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
+    labIdea = LabIdeas(request.get_json(), request).idea()
+    return {"message": labIdea["message"]}, labIdea["code"]
+
+
 def sendEmail(subject, htmlTemplate, params, recipient=None):
     """Send an email to appropriate recipient with given template and parameters
     """
     if recipient is None:
         recipient = params.get("umass_email")
-    msg = Message(subject=subject, sender=("CICSoft", os.environ.get("MAIL_USERNAME")), recipients=[recipient],)
+    msg = Message(subject=subject, sender=(
+        "CICSoft", os.environ.get("MAIL_USERNAME")), recipients=[recipient],)
     msg.html = render_template(
         htmlTemplate,
         firstName=params.get("first_name"),
