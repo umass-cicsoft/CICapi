@@ -10,7 +10,7 @@ from api.user_decision import UserDecision
 from api.user_verification import UserVerification
 from api.user_attendance import UserAttendance
 from api.user_tech_poll import UserTechPoll
-from api.lab_ideas import labIdeas
+from api.lab_ideas import LabIdeas
 
 
 load_dotenv()
@@ -185,7 +185,7 @@ def labIdeaSubmission():
     Returns:
         response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
     """
-    labIdea = labIdeas(request.get_json(), request).idea()
+    labIdea = LabIdeas(request.get_json(), request).idea()
     return {"message": labIdea["message"]}, labIdea["code"]
 
 
