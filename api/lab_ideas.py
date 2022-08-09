@@ -5,7 +5,7 @@ import uuid
 
 
 class labIdeas:
-    def __init__(self, requestJSON):
+    def __init__(self, requestJSON, request):
         self.expectedFields = [
             "first_name",
             "last_name",
