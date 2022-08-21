@@ -11,6 +11,7 @@ from api.user_verification import UserVerification
 from api.user_attendance import UserAttendance
 from api.user_tech_poll import UserTechPoll
 from api.lab_ideas import LabIdeas
+from api.core_team_application import CoreTeamApplication
 
 
 load_dotenv()
@@ -187,6 +188,45 @@ def labIdeaSubmission():
     """
     labIdea = LabIdeas(request.get_json(), request).idea()
     return {"message": labIdea["message"]}, labIdea["code"]
+
+@app.route("/core/apply", methods=["POST"])
+def coreApply():
+    """Handle a new core team application in the database at endpoint: "https://cicsoft-web-api.herokuapp.com/core/apply"
+    Request Payload: 
+        {
+            "first_name": <Candidate's first name>,
+            "last_name": <Candidate's last name>,
+            "umass_email": <Candidate's official @umass.edu email address>,
+            "graduation_year": <Candidate's graduation year>,
+            "team": <Candidate's preferred team(s)>,
+            "github_link": <Link to candidate's GitHub profile>,
+            "linkedin_link": <Link to candidate's LinkedIn profile>,
+            "question_1_response": <Candidate's response to why they are interested in joining core team>,
+            "question_2_response": <Candidate's response to how their skills are aligned>
+        }
+    Returns:
+        response: a 2-tuple containing an object (with only a message attribute) and an HTTP response code
+    """
+    coreTeamApplication = CoreTeamApplication(request.get_json())
+    validation = coreTeamApplication.validate()
+    if validation["status"] == "success":
+        application = coreTeamApplication.apply()
+        if application["code"] == 200:
+            firstName = application["data"]["first_name"]
+            lastName = application["data"]["last_name"]
+            sendEmail(
+                "We have received your application for CICSoft's Core Team!", "core_welcome.html", application[
+                    "data"],
+            )
+            sendEmail(
+                f"{firstName} {lastName} has applied to CICSoft's Core Team!",
+                "core_application_notification.html",
+                application["data"],
+                "cicsoftumass@gmail.com",
+            )
+        return {"message": application["message"]}, application["code"]
+    else:
+        return {"message": validation["message"]}, validation["code"]
 
 
 def sendEmail(subject, htmlTemplate, params, recipient=None):
