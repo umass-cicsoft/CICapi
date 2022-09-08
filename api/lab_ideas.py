@@ -9,6 +9,7 @@ class LabIdeas:
         self.expectedFields = [
             "first_name",
             "last_name",
+            "email",
             "idea_text",
             "ip_address"
         ]
